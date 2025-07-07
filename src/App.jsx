@@ -1,28 +1,60 @@
 import { useState } from "react";
+import Select from "react-select";
 
-const TICKER_LIST = [
-  "AAPL", "MSFT", "GOOGL", "AMZN", "TSLA",
-  "META", "NVDA", "NFLX", "AMD", "BABA",
-  "BTC-USD", "ETH-USD", "EURUSD=X", "SPY", "QQQ"
-];
+const TICKER_OPTIONS = [
+  "AAPL",
+  "MSFT",
+  "GOOGL",
+  "AMZN",
+  "TSLA",
+  "META",
+  "NVDA",
+  "NFLX",
+  "AMD",
+  "BABA",
+  "BTC-USD",
+  "ETH-USD",
+  "EURUSD=X",
+  "SPY",
+  "QQQ",
+].map((t) => ({ value: t, label: t }));
 
 function App() {
   const [ticker, setTicker] = useState("");
   const [interval, setInterval] = useState("1d");
   const [period, setPeriod] = useState("7d");
   const [data, setData] = useState([
-    { Date: "2024-01-01", Open: 150, High: 160, Low: 145, Close: 158, Volume: 100000 },
-    { Date: "2024-01-02", Open: 158, High: 162, Low: 155, Close: 160, Volume: 120000 },
+    {
+      Date: "2024-01-01",
+      Open: 150,
+      High: 160,
+      Low: 145,
+      Close: 158,
+      Volume: 100000,
+    },
+    {
+      Date: "2024-01-02",
+      Open: 158,
+      High: 162,
+      Low: 155,
+      Close: 160,
+      Volume: 120000,
+    },
   ]);
   const [loading, setLoading] = useState(false);
 
   const handleFetch = async (e) => {
     e.preventDefault();
-    if (!ticker || !interval || !period) return;
+    if (!ticker || !interval || !period) {
+      alert("Please complete all required fields.");
+      return;
+    }
 
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:8000/fetch?ticker=${ticker}&interval=${interval}&period=${period}`);
+      const res = await fetch(
+        `http://localhost:8000/fetch?ticker=${ticker}&interval=${interval}&period=${period}`
+      );
       const json = await res.json();
       setData(json.data || []);
     } catch (err) {
@@ -49,32 +81,49 @@ function App() {
 
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `${ticker || "mock"}_${interval}_${period}.csv`);
+    link.setAttribute(
+      "download",
+      `${ticker || "mock"}_${interval}_${period}.csv`
+    );
     link.click();
   };
 
   return (
-<div className="h-screen w-screen bg-gray-900 text-white flex items-center justify-center p-4">
-  <div className="w-full max-w-3xl bg-gray-800 rounded-xl shadow-2xl p-6 space-y-6 overflow-y-auto h-[95vh]">
-        <h1 className="text-3xl font-bold text-center text-blue-400">Keisan Trading Viewer</h1>
+    <div className="h-screen w-screen bg-gray-900 text-white flex items-center justify-center p-4">
+      <div className="w-full max-w-3xl bg-gray-800 rounded-xl shadow-2xl p-6 space-y-6 overflow-y-auto h-[95vh]">
+        <h1 className="text-3xl font-bold text-center text-blue-400">
+          Keisan Trading Viewer
+        </h1>
 
         <form onSubmit={handleFetch} className="space-y-4">
           <div>
-            <label className="block mb-1 text-sm font-semibold">Ticker (e.g. AAPL)</label>
-            <input
-              type="text"
-              list="tickers"
-              required
-              placeholder="Enter ticker"
-              value={ticker}
-              onChange={(e) => setTicker(e.target.value.toUpperCase())}
-              className="w-full bg-gray-700 text-white border border-gray-600 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <datalist id="tickers">
-              {TICKER_LIST.map((t) => (
-                <option key={t} value={t} />
-              ))}
-            </datalist>
+            <label className="block mb-1 text-sm font-semibold">
+              Ticker (e.g. AAPL)
+            </label>
+            <div>
+              <label className="block mb-1 text-sm font-semibold">Ticker</label>
+              <Select
+                options={TICKER_OPTIONS}
+                onChange={(selected) => setTicker(selected?.value || "")}
+                className="text-black"
+                classNamePrefix="react-select"
+                placeholder="Select a ticker"
+                isClearable
+                required
+                theme={(theme) => ({
+                  ...theme,
+                  borderRadius: 6,
+                  colors: {
+                    ...theme.colors,
+                    primary25: "#2c3e50",
+                    primary: "#3498db",
+                    neutral0: "#1f2937", // fondo
+                    neutral80: "white", // texto
+                    neutral90: "#ccc",
+                  },
+                })}
+              />
+            </div>
           </div>
 
           <div>
@@ -130,7 +179,9 @@ function App() {
                 <thead className="bg-gray-700 text-blue-300">
                   <tr>
                     {Object.keys(data[0]).map((key) => (
-                      <th key={key} className="border px-2 py-1">{key}</th>
+                      <th key={key} className="border px-2 py-1">
+                        {key}
+                      </th>
                     ))}
                   </tr>
                 </thead>
@@ -138,13 +189,17 @@ function App() {
                   {data.slice(0, 10).map((row, i) => (
                     <tr key={i}>
                       {Object.values(row).map((val, j) => (
-                        <td key={j} className="border px-2 py-1 text-white">{val}</td>
+                        <td key={j} className="border px-2 py-1 text-white">
+                          {val}
+                        </td>
                       ))}
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <p className="text-xs text-gray-400 mt-2">Showing first 10 rows</p>
+              <p className="text-xs text-gray-400 mt-2">
+                Showing first 10 rows
+              </p>
             </div>
 
             <button
