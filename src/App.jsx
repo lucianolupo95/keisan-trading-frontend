@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Select from "react-select";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const TICKER_OPTIONS = [
   "AAPL",
   "MSFT",
@@ -53,8 +55,9 @@ function App() {
     setLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:8000/fetch?ticker=${ticker}&interval=${interval}&period=${period}`
+        `${API_URL}/fetch/?ticker=${ticker}&interval=${interval}&period=${period}`
       );
+
       const json = await res.json();
       setData(json.data || []);
     } catch (err) {
@@ -105,23 +108,49 @@ function App() {
               <Select
                 options={TICKER_OPTIONS}
                 onChange={(selected) => setTicker(selected?.value || "")}
-                className="text-black"
+                className="text-white"
                 classNamePrefix="react-select"
                 placeholder="Select a ticker"
                 isClearable
-                required
                 theme={(theme) => ({
                   ...theme,
                   borderRadius: 6,
                   colors: {
                     ...theme.colors,
-                    primary25: "#2c3e50",
-                    primary: "#3498db",
-                    neutral0: "#1f2937", // fondo
-                    neutral80: "white", // texto
-                    neutral90: "#ccc",
+                    primary25: "#374151", // hover
+                    primary: "#3b82f6", // selected border
+                    neutral0: "#1f2937", // input bg
+                    neutral80: "white", // text color
+                    neutral20: "#6b7280", // border
+                    neutral30: "#9ca3af", // border hover
                   },
                 })}
+                styles={{
+                  menu: (provided) => ({
+                    ...provided,
+                    backgroundColor: "#1f2937", // fondo del dropdown
+                  }),
+                  option: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isFocused
+                      ? "#374151"
+                      : state.isSelected
+                      ? "#3b82f6"
+                      : "#1f2937",
+                    color: "white",
+                    cursor: "pointer",
+                  }),
+                  control: (provided) => ({
+                    ...provided,
+                    backgroundColor: "#1f2937",
+                    color: "white",
+                    borderColor: "#4b5563",
+                  }),
+                  singleValue: (provided) => ({
+                    ...provided,
+                    color: "white",
+                  }),
+                }}
               />
             </div>
           </div>
