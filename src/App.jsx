@@ -23,8 +23,12 @@ const TICKER_OPTIONS = [
 
 function App() {
   const [ticker, setTicker] = useState("");
-  const [interval, setInterval] = useState("1d");
-  const [period, setPeriod] = useState("7d");
+  const [intervalAmount, setIntervalAmount] = useState("");
+  const [intervalUnit, setIntervalUnit] = useState("minutes");
+
+  const [periodAmount, setPeriodAmount] = useState("");
+  const [periodUnit, setPeriodUnit] = useState("days"); // o "ytd", "max"
+
   const [data, setData] = useState([
     {
       Date: "2024-01-01",
@@ -47,12 +51,15 @@ function App() {
 
   const handleFetch = async (e) => {
     e.preventDefault();
+    const interval = buildInterval();
+    const period = buildPeriod();
     if (!ticker || !interval || !period) {
       alert("Please complete all required fields.");
       return;
     }
 
     setLoading(true);
+
     try {
       const res = await fetch(
         `${API_URL}/fetch/?ticker=${ticker}&interval=${interval}&period=${period}`
@@ -66,6 +73,16 @@ function App() {
     } finally {
       setLoading(false);
     }
+  };
+  const buildInterval = () => {
+    const map = { minutes: "m", hours: "h", days: "d" };
+    return `${intervalAmount}${map[intervalUnit]}`;
+  };
+
+  const buildPeriod = () => {
+    if (periodUnit === "ytd" || periodUnit === "max") return periodUnit;
+    const map = { days: "d", months: "mo", years: "y" };
+    return `${periodAmount}${map[periodUnit]}`;
   };
 
   const downloadCSV = () => {
@@ -155,42 +172,59 @@ function App() {
             </div>
           </div>
 
+          {/* INTERVAL */}
           <div>
             <label className="block mb-1 text-sm font-semibold">Interval</label>
-            <select
-              required
-              value={interval}
-              onChange={(e) => setInterval(e.target.value)}
-              className="w-full bg-gray-700 text-white border border-gray-600 px-3 py-2 rounded"
-            >
-              <option value="1m">1m</option>
-              <option value="5m">5m</option>
-              <option value="15m">15m</option>
-              <option value="1h">1h</option>
-              <option value="1d">1d</option>
-            </select>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min={1}
+                required
+                value={intervalAmount}
+                onChange={(e) => setIntervalAmount(e.target.value)}
+                placeholder="e.g. 5"
+                className="w-1/2 bg-gray-700 text-white border border-gray-600 px-3 py-2 rounded"
+              />
+              <select
+                required
+                value={intervalUnit}
+                onChange={(e) => setIntervalUnit(e.target.value)}
+                className="w-1/2 bg-gray-700 text-white border border-gray-600 px-3 py-2 rounded"
+              >
+                <option value="minutes">Minutes</option>
+                <option value="hours">Hours</option>
+                <option value="days">Days</option>
+              </select>
+            </div>
           </div>
 
+          {/* PERIOD */}
           <div>
             <label className="block mb-1 text-sm font-semibold">Period</label>
-            <select
-              required
-              value={period}
-              onChange={(e) => setPeriod(e.target.value)}
-              className="w-full bg-gray-700 text-white border border-gray-600 px-3 py-2 rounded"
-            >
-              <option value="1d">1d</option>
-              <option value="5d">5d</option>
-              <option value="7d">7d</option>
-              <option value="1mo">1mo</option>
-              <option value="3mo">3mo</option>
-              <option value="6mo">6mo</option>
-              <option value="1y">1y</option>
-              <option value="5y">5y</option>
-              <option value="10y">10y</option>
-              <option value="ytd">YTD</option>
-              <option value="max">Max</option>
-            </select>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min={1}
+                disabled={periodUnit === "ytd" || periodUnit === "max"}
+                required={periodUnit !== "ytd" && periodUnit !== "max"}
+                value={periodAmount}
+                onChange={(e) => setPeriodAmount(e.target.value)}
+                placeholder="e.g. 7"
+                className="w-1/2 bg-gray-700 text-white border border-gray-600 px-3 py-2 rounded"
+              />
+              <select
+                required
+                value={periodUnit}
+                onChange={(e) => setPeriodUnit(e.target.value)}
+                className="w-1/2 bg-gray-700 text-white border border-gray-600 px-3 py-2 rounded"
+              >
+                <option value="days">Days</option>
+                <option value="months">Months</option>
+                <option value="years">Years</option>
+                <option value="ytd">YTD</option>
+                <option value="max">Max</option>
+              </select>
+            </div>
           </div>
 
           <button
